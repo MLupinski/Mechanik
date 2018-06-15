@@ -1,10 +1,13 @@
 <?php
+session_start();
 
+if(isset($_SESSION['login'])) {
 
-$query = require 'core/bootstrap.php';
+	header('Location: controllers\clientadmin.php');
+}
+else {
 
+	require 'views\index.view.php';
+}
 
-$clientsdata = $query->selectAll('clients');
-
-
-require_once 'views/index.view.php';
+		
