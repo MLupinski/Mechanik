@@ -1,4 +1,16 @@
-<?php require 'partials\viewhead.php';  ?>
+<?php 
+
+require 'partials\viewhead.php'; 
+
+if(isset($_POST['clientadd'])) {
+	$name = $_POST['firstname'];
+	$lastname = $_POST['lastname'];
+
+	$app['database']->addCar($name, $lastname); 
+	header('refresh:3;url=clientadmin.php');
+}
+
+?>
 
 	<div class="container">
 		<div class="row">
@@ -14,20 +26,11 @@
 					<label>Samochód: </label> <input type="text" placeholder="Samochód(marka i rok)" name="car">
 					<label>Kontakt: </label> <input type="text" placeholder="Kontakt" name="contact">
 					<label>Rachunek: </label> <input type="text" placeholder="Rachunek (BRUTTO w zł)" name="bill">					
-					<button type="submit" value="add" name="add" class="button2">Dodaj</button>
+					<button type="submit" value="add" name="clientadd" class="button2">Dodaj</button>
 				</form>
 				<a href="\strona\index.php">&larr; Spis Klientów</a>
 			</div>
 		</div>
 	</div>
 
-<?php 
-
-if(isset($_POST['add'])) {
-
-	$app['database']->addClient($_POST['firstname'], $_POST['lastname'], $_POST['street'], $_POST['postalcode'], $_POST['town'], $_POST['car'], $_POST['contact'], $_POST['bill']); 
-
-}
-require 'partials\footer.php'; 
-
-?>
+<?php require 'partials\footer.php'; ?>

@@ -48,39 +48,53 @@ public function selectAll($table, $id)
 	        </tr>
 	        </thead>';
 
-	        $clientquery = $this->pdo->prepare("Select * From {$table}");
-	        $clientquery->execute();
+    $clientquery = $this->pdo->prepare("Select * From {$table}");
+    $clientquery->execute();
 
-	          foreach($clientquery as $row)
-	          {
-	            echo '<tbody>
-	                  <tr>
-	                    <th scope="row">'.$row['ID'].'.</th>';
-	            echo      '<td>'.$row['FIRSTNAME'].'</td>';
-	            echo      '<td>'.$row['LASTNAME'].'</td>';
-	            echo      '<td>'.$row['CAR'].'</td>';
-	            echo      '<td>'.$row['CONTACT'].'</td>';
-	            echo      '<td>'.$row['BILL'].' zł</td>';
-	            echo      '<td><a href="car.php?id='.$row['ID'].'">Szczegóły </a></br>';
-	            echo        '<a href="clientedit.php?id='.$row['ID'].'">Edytuj </a></br>';
-	            echo        '<a href="clientdelete.php?id='.$row['ID'].'">Usuń</a></br>';
-	            echo        '<a href="invoice.php?id='.$row['ID'].'">Faktura</a></br>';
-              echo        '<a href="clientendrepair.php?id='.$row['ID'].'">Zakończona</a></br>
-	                      </td>
-	                  </tr>
-	                  </tbody>';
-	          }
-	      echo '</table>';
-	}
+    $clientdata = $clientquery->fetchAll(PDO::FETCH_CLASS);
 
-  function editClient()
-  {
-    if(empty($_POST['firstname']) || empty($_POST['lastname']) || empty($_POST['car']) || empty($_POST['contact']) || empty($_POST['bill']))
-    {
-      echo '<div class="error">Wystąpił błąd w edycji klienta! Upewnij się, że wypełniłeś wszystkie pola formularza.</div>';  
+    foreach ($clientdata as $data) {
+
+      if(!$data->COMPLETED){
+            
+        echo '<tbody>
+              <tr>
+              <th scope="row">'.$data->ID.'.</th>';
+        echo '<td>'.$data->FIRSTNAME.'</td>';
+        echo '<td>'.$data->LASTNAME.'</td>';
+        echo '<td>'.$data->CAR.'</td>';
+        echo '<td>'.$data->CONTACT.'</td>';
+        echo '<td>'.$data->BILL.' zł</td>';
+        echo '<td><a style="color: red;" href="car.php?id='.$data->ID.'">Szczegóły </a></br>';
+        echo     '<a style="color: red;" href="clientedit.php?id='.$data->ID.'">Edytuj </a></br>';
+        echo     '<a style="color: red;" href="clientdelete.php?id='.$data->ID.'">Usuń</a></br>';
+        echo     '<a style="color: red;" href="invoice.php?id='.$data->ID.'">Faktura</a></br>';
+        echo     '<a style="color: red;" href="clientend.php?id='.$data->ID.'">Zakończ</a></br>
+              </td>
+              </tr>
+              </tbody>';      
+      } else{
+
+          echo '<tbody>
+                <tr style="background-color: #33cc00;">
+                <th scope="row">'.$data->ID.'.</th>';
+          echo '<td>'.$data->FIRSTNAME.'</td>';
+          echo '<td>'.$data->LASTNAME.'</td>';
+          echo '<td>'.$data->CAR.'</td>';
+          echo '<td>'.$data->CONTACT.'</td>';
+          echo '<td>'.$data->BILL.' zł</td>';
+          echo '<td><a style="color: white;" href="car.php?id='.$data->ID.'">Szczegóły </a></br>';
+          echo     '<a style="color: white;" href="invoice.php?id='.$data->ID.'">Faktura</a></br>
+                </td>
+                </tr>
+                </tbody>';
+      }      
     }
-    else
-    {
+    echo '</table>';  
+  }
+
+  function editClient($table)
+  {
       $firstname = $_POST['firstname'];
       $lastname = $_POST['lastname'];
       $car = $_POST['car'];
@@ -88,10 +102,9 @@ public function selectAll($table, $id)
       $bill = $_POST['bill'];
       $id = $_POST['id'];
 
-      $editquery = $this->pdo->query("UPDATE clients SET FIRSTNAME = '$firstname', LASTNAME = '$lastname', CAR = '$car', CONTACT = '$contact', BILL ='$bill' WHERE ID='$id'");     
+      $editquery = $this->pdo->query("UPDATE {$table} SET FIRSTNAME = '$firstname', LASTNAME = '$lastname', CAR = '$car', CONTACT = '$contact', BILL ='$bill' WHERE ID='$id'");     
 
-      echo '<div class="noerror">Dane klienta zostały zmienione.</div>';
-    }
+      echo '<div class="noerror">Dane klienta zostały zmienione. Po 3 sekundy zostaniesz przekierowany na stronę główną.</div>';
   
   }
 
@@ -200,29 +213,30 @@ public function selectAll($table, $id)
   }
   public function addClient($firstname, $lastname, $street, $postalcode, $town, $car, $contact, $bill)
   {
-    if(empty($firstname) || empty($lastname)  || empty($street) || empty($postalcode) || empty($town) || empty($car) || empty($contact) || empty($bill))
+    if(!isset($firstname) || !isset($lastname)  || !isset($street) || !isset($postalcode) || !isset($town) || !isset($car) || !isset($contact) || !isset($bill))
     {
       echo '<div class="error">Wystąpił błąd w dodawaniu klienta! Upewnij się, że wypełniłeś wszystkie pola formularza.</div>'; 
     }
     else
     {
       $addclientquery = $this->pdo->query("INSERT INTO clients SET FIRSTNAME = '$firstname', LASTNAME = '$lastname', ADDRESS = '$street', POSTALCODE = '$postalcode', TOWN = '$town', CAR = '$car', CONTACT = '$contact', BILL = '$bill', COMPLETED = 0"); 
-      addcar();
+
+      echo '<div class="noerror">Klient został dodany do prawidłowo. Za 3 sekundy zostaniesz przekierowany na stronę główną.</div>';
     }
     
   }
 
-  function addCar()
+  function addCar($firstname, $lastname)
   {
-    $firstname = $_POST['firstname'];
-    $lastname = $_POST['lastname'];
 
-    $addcarquery = $this->pdo->query("SELECT ID, CAR FROM clients WHERE FIRSTNAME = '$firstname' AND LASTNAME = '$lastname'");
-    foreach($stmt as $row)
+    $selectcarquery = $this->pdo->query("SELECT ID, CAR FROM clients WHERE FIRSTNAME = '$firstname' AND LASTNAME = '$lastname'");
+
+    foreach($selectcarquery as $row)
     {
       $id = $row['ID'];
-      $car = $row['Samochod'];
+      $car = $row['CAR'];
     }
+
     $addcarquery = $this->pdo->query("INSERT INTO cars SET CAR = '$car', REP = 0, DONE = 0, CLIENT_ID = '$id'");  
 
   }
@@ -297,5 +311,9 @@ public function selectAll($table, $id)
     {
       echo '<div class="error">Wystąpił błąd podczas usuwania klienta!</div>';  
     }
-}
+  }
+  function endRepair($table, $id)
+  {
+    $endrepairquery = $this->pdo->query("UPDATE {$table} SET COMPLETED = 1 WHERE ID='$id'"); 
+  }
 }
